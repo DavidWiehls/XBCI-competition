@@ -5,7 +5,7 @@ focusing on battery monitoring, signal strength, and electrode status.
 """
 
 # Version info
-__version__ = '0.0.4'
+__version__ = '1.0.0'
 
 
 # Import main classes and functions
