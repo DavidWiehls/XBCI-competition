@@ -1,356 +1,242 @@
-# BLE SDK
+# BCI Motor Imagery Competition - Setup Guide
 
-一个用于与BLE（低功耗蓝牙）物联网设备通信的Python SDK。
+This folder contains the implementation for the BCI Motor Imagery Classification competition. The system can classify four different motor imagery tasks: right hand, left hand, right feet, and left feet movements using EEG data from an 8-channel BLE device.
 
-## 功能特性
+## 🚀 Quick Start
 
--   **简单易用的API**：通过高级方法 (`start_eeg_stream`, `start_battery_stream` 等) 轻松启动和停止各种数据流。
--   **多种数据支持**：内置对多种数据类型的解析和处理，包括：
-    -   电池电量与信号强度 (Battery/RSSI)
-    -   脑电 (EEG)
-    -   阻抗 (Impedance)
-    -   惯性测量单元 (IMU)
-    -   电极导联状态 (Lead Status)
--   **原始数据模式**：所有数据流都支持 `raw_data_only` 参数，可返回去除帧头帧尾的原始16进制数据，便于自定义数据处理。
--   **混合数据模式**：支持将 EEG/Impedance 主数据流与 IMU、Lead 数据流同步采集，并通过单一回调函数返回整合后的数据。混合模式支持统一的原始数据输出控制。
--   **异步设计**：完全基于 `asyncio`，支持高并发操作和异步上下文管理器 (`async with`)，确保资源被妥善管理。
--   **灵活的回调机制**：为每个数据流提供简单的回调函数接口，支持解析数据和原始数据两种模式。
--   **完善的异常处理**：定义了清晰的异常类，便于开发者进行错误处理。
--   **隔离的日志系统**：SDK内部使用独立的日志系统，不会干扰上层应用的日志配置。
--   **动态通道配置**：支持不同设备的通道数量配置（1、2、4、8通道），通过设备配置自动传递。
--   **智能缓存机制**：使用装饰器实现配置缓存，提高数据处理性能。
--   **命令行监控工具**：提供一个开箱即用的命令行工具，支持所有数据流模式和原始数据输出。
+### Prerequisites
 
-## 安装
+1. **Hardware Requirements**:
+   - BCI device compatible with the BLE SDK (8-channel EEG device)
+   - Computer with Bluetooth capability
+   - Proper electrode placement for EEG recording
 
-通过 `pip` 从 PyPI 安装 (推荐):
+2. **Software Requirements**:
+   - Python 3.8 or higher
+   - All required dependencies (see installation below)
 
-```bash
-# 此处为示例，当发布到PyPI后可使用
-pip install ble-sdk
+### Installation
+
+1. **Navigate to the project root**:
+   ```bash
+   cd /path/to/XBCI-competition
+   ```
+
+2. **Install the BLE SDK**:
+   ```bash
+   pip install -e .
+   ```
+
+3. **Install BCI dependencies**:
+   ```bash
+   pip install -r requirements_bci.txt
+   ```
+
+## 📁 File Structure
+
+The main BCI implementation files are located in the project root:
+
+```
+XBCI-competition/
+├── bci_motor_imagery_classifier_v2.py    # Main BCI classifier
+├── test_scanner.py                       # Device connection test
+├── requirements_bci.txt                  # Python dependencies
+├── BCI_README.md                         # Detailed documentation
+└── examples/
+    └── competition_files/
+        └── README.md                     # This file
 ```
 
-或者从源码安装以进行开发：
+## 🧠 Running the BCI System
+
+### Step 1: Test Device Connection
+
+First, ensure your BCI device is properly connected:
 
 ```bash
-git clone https://github.com/your-repo/ble_sdk.git
-cd ble_sdk
-# 安装为可编辑模式，方便开发
-pip install -e .
+# From the project root directory
+python test_scanner.py
 ```
 
-## 日志系统
+**Expected Output**:
+```
+BLE Scanner Test
+==============================
+Testing BLE Scanner...
+Found 1 device(s):
+  1. YourDeviceName (XX:XX:XX:XX:XX:XX) - RSSI: -45
+Scanner test completed successfully!
+You can now run the BCI classifier.
+```
 
-SDK采用了隔离的日志系统设计，确保SDK内部日志和上层应用日志互不干扰：
+**If no devices are found**:
+- Ensure your BCI device is turned on
+- Check that Bluetooth is enabled on your computer
+- Verify the device is in pairing mode
+- Make sure electrodes are properly placed
 
-### SDK内部日志
-- 使用loguru库，但通过过滤器实现逻辑隔离
-- 格式：`时间 | 级别 | SDK | 模块:函数:行号 | 消息`
-- 在`__init__.py`中全局初始化，默认INFO级别
+### Step 2: Run the BCI Classifier
 
-### 上层应用日志
-- 可以自由配置loguru或其他日志库
-- 通过过滤器排除SDK内部日志，避免重复输出
-- 建议格式：`时间 | 级别 | APP | 模块:函数:行号 | 消息`
+```bash
+# From the project root directory
+python bci_motor_imagery_classifier_v2.py
+```
 
-### 示例配置
+## 🎯 How the System Works
+
+### Phase 1: Calibration (4 Sessions)
+
+The system will guide you through 4 calibration sessions, each lasting 10 seconds:
+
+1. **Right Hand Session**: Think about moving your right hand
+2. **Left Hand Session**: Think about moving your left hand  
+3. **Right Feet Session**: Think about moving your right foot
+4. **Left Feet Session**: Think about moving your left foot
+
+**Instructions for each session**:
+- Get comfortable and relax
+- When prompted, focus on imagining the specific movement
+- Try to maintain consistent mental imagery throughout the 10 seconds
+- Avoid physical movements - only mental imagery
+- Keep your eyes open and minimize blinking
+
+### Phase 2: Real-time Classification
+
+After calibration, the system will:
+1. Collect 10 seconds of EEG data
+2. Process and classify the data
+3. Display the prediction: "RIGHT HAND", "LEFT HAND", "RIGHT FEET", or "LEFT FEET"
+4. Repeat the process until you stop it (Ctrl+C)
+
+## 🔧 Technical Details
+
+### Signal Processing Pipeline
+
+1. **Data Collection**: Raw EEG data from 8 channels at 500 Hz
+2. **Parsing**: Convert raw byte data to voltage values using device-specific algorithm
+3. **Filtering**: 
+   - Bandpass filter (2-40 Hz) to focus on relevant brain activity
+   - Notch filter (50 Hz) to remove power line interference
+4. **Feature Extraction**:
+   - **Time Domain**: Mean, std, variance, min, max, percentiles, median
+   - **Frequency Domain**: Power in delta, theta, alpha, beta, and mu bands
+   - **Spectral**: Dominant frequency and peak amplitude
+5. **Classification**: Random Forest classifier with 100 trees
+
+### Data Format
+
+The system handles the specific data format from your BLE device:
+- **Packet Structure**: 198 bytes per packet
+- **Header**: 5 bytes (frame header)
+- **Data**: 192 bytes (8 channels × 64 samples × 3 bytes per sample)
+- **Footer**: 1 byte
+- **Sample Rate**: 500 Hz
+- **Resolution**: 3 bytes per sample (24-bit)
+
+## 🎯 Competition Guidelines
+
+### Best Practices for High Accuracy
+
+1. **Electrode Placement**:
+   - Ensure all electrodes have good contact with the scalp
+   - Use conductive gel if necessary
+   - Check impedance levels if your device supports it
+
+2. **Mental Imagery Technique**:
+   - Practice consistent mental imagery before the competition
+   - Focus on the specific movement without physical execution
+   - Maintain concentration throughout each session
+
+3. **Environment**:
+   - Minimize external distractions
+   - Ensure stable Bluetooth connection
+   - Avoid movement during data collection
+
+### Performance Optimization
+
+1. **For Better Accuracy**:
+   - Use longer calibration sessions (15-20 seconds each)
+   - Practice mental imagery techniques beforehand
+   - Ensure good electrode contact throughout the session
+
+2. **For Real-time Performance**:
+   - Close unnecessary applications
+   - Use shorter classification windows (5-10 seconds)
+   - Maintain stable system performance
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+1. **No devices found**:
+   ```
+   No BLE devices found!
+   Please ensure:
+   1. Your BCI device is turned on
+   2. Bluetooth is enabled on your computer
+   3. The device is in pairing mode
+   ```
+   - Check device power and pairing mode
+   - Verify Bluetooth is enabled
+   - Ensure device is within range
+
+2. **Connection errors**:
+   ```
+   Error during BCI session: Connection failed
+   ```
+   - Restart the device
+   - Check battery level
+   - Ensure proper electrode placement
+
+3. **Poor classification accuracy**:
+   - Ensure good electrode contact
+   - Minimize movement during calibration
+   - Focus on consistent mental imagery
+   - Consider longer calibration sessions
+
+### Error Messages and Solutions
+
+| Error | Solution |
+|-------|----------|
+| `ModuleNotFoundError: No module named 'ble_sdk'` | Run `pip install -e .` from project root |
+| `No BLE devices found` | Check device power and pairing mode |
+| `Connection failed` | Restart device and check Bluetooth |
+| `Training accuracy: 0.25` | Improve electrode contact and mental imagery |
+
+## 📊 Expected Results
+
+### Typical Performance
+
+- **Training Accuracy**: 0.75 - 1.0 (depends on user and setup)
+- **Real-time Classification**: Should correctly identify motor imagery tasks
+- **Response Time**: ~10 seconds per classification
+
+### Success Indicators
+
+- Scanner finds your device successfully
+- Calibration completes without errors
+- Training accuracy > 0.75
+- Real-time predictions are consistent
+
+## 🔄 Customization
+
+### Modifying Classification Classes
+
+To change the motor imagery tasks, edit `bci_motor_imagery_classifier_v2.py`:
 
 ```python
-import sys
-from loguru import logger
-
-# 配置上层应用日志（在导入SDK之前）
-logger.remove()  # 移除默认handler
-logger.add(
-    sys.stderr, 
-    level="INFO",
-    format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | APP | {name}:{function}:{line} | {message}",
-    filter=lambda record: not record["extra"].get("sdk_internal", False),  # 排除SDK日志
-)
-
-# 然后导入SDK
-from ble_sdk.client import BleClient
+# Line ~40: Change the classes list
+self.classes = ['right_hand', 'left_hand', 'right_feet', 'left_feet']
 ```
 
-## 使用示例
-
-### 1. 采集电池数据流
-
-以下示例展示了如何连接到设备并采集10秒的电池和RSSI数据。
+### Adjusting Parameters
 
 ```python
-import asyncio
-import sys
-from ble_sdk.client import BleClient
-from ble_sdk.constants import DeviceType
-from loguru import logger
+# Filter frequencies (lines ~35-37)
+self.low_freq = 2.0      # Lower bandpass frequency
+self.high_freq = 40.0    # Upper bandpass frequency  
+self.notch_freq = 50.0   # Notch filter frequency
 
-# 配置应用日志
-logger.remove()
-logger.add(
-    sys.stderr, 
-    level="INFO",
-    filter=lambda record: not record["extra"].get("sdk_internal", False),
-)
-
-DEVICE_ADDRESS = "D2:43:D5:88:4D:9A" # 替换为你的设备地址
-
-def my_data_handler(data):
-    """用户自定义的回调函数，用于处理接收到的数据"""
-    logger.info(f"接收到数据: {data}")
-
-async def main():
-    client = BleClient(address=DEVICE_ADDRESS, device_type=DeviceType.BLE_8)
-    try:
-        async with client:
-            logger.info("设备已连接。")
-            await client.start_battery_stream(my_data_handler)
-            logger.info("电池数据流已启动，监控10秒...")
-            await asyncio.sleep(10)
-            await client.stop_battery_stream()
-            logger.info("电池数据流已停止。")
-    except Exception as e:
-        logger.error(f"发生错误: {e}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# Collection duration (lines ~180, ~250)
+duration=10  # Change to desired duration in seconds
 ```
-
-### 2. 原始数据模式示例
-
-SDK支持返回去除帧头帧尾的原始16进制数据，便于自定义处理：
-
-```python
-import asyncio
-from ble_sdk.client import BleClient
-from ble_sdk.constants import DeviceType
-
-def raw_data_handler(data):
-    """处理原始数据的回调函数"""
-    if isinstance(data, bytearray):
-        print(f"原始数据 (长度={len(data)}): {data.hex()}")
-    else:
-        print(f"解析数据: {data}")
-
-async def main():
-    client = BleClient(address="XX:XX:XX:XX:XX:XX", device_type=DeviceType.BLE_8)
-    async with client:
-        # 启动EEG原始数据流
-        await client.start_eeg_stream(raw_data_handler, raw_data_only=True)
-        await asyncio.sleep(10)
-        await client.stop_eeg_stream()
-
-asyncio.run(main())
-```
-
-### 3. 混合数据流示例
-
-混合模式可以同时采集主数据流（EEG或Impedance）、IMU和Lead数据：
-
-```python
-import asyncio
-from ble_sdk.client import BleClient
-from ble_sdk.constants import DeviceType
-
-def mixed_data_handler(data):
-    """处理混合数据的回调函数"""
-    print(f"时间戳: {data['timestamp']}")
-    print(f"主数据类型: {data['type']}")
-    
-    # 主数据（EEG或Impedance）
-    if data['type'] == 'eeg':
-        eeg_data = data['eeg_data']
-        if isinstance(eeg_data, bytearray):
-            print(f"EEG原始数据: {eeg_data.hex()}")
-        else:
-            print(f"EEG通道数据: {len(eeg_data['channels'])} 通道")
-    
-    # IMU数据
-    imu_data = data.get('imu_data')
-    if imu_data:
-        if isinstance(imu_data, bytearray):
-            print(f"IMU原始数据: {imu_data.hex()}")
-        else:
-            print(f"IMU数据: 加速度={imu_data['acceleration']}")
-    
-    # Lead数据
-    lead_data = data.get('lead_data')
-    if lead_data:
-        if isinstance(lead_data, bytearray):
-            print(f"Lead原始数据: {lead_data.hex()}")
-        else:
-            print(f"Lead状态: P={lead_data['p_status']}")
-
-async def main():
-    client = BleClient(address="XX:XX:XX:XX:XX:XX", device_type=DeviceType.BLE_8)
-    async with client:
-        # 启动混合数据流，主数据为EEG，启用原始数据模式
-        await client.start_mixed_stream(
-            mode="eeg", 
-            user_callback=mixed_data_handler,
-            raw_main_data_only=True  # 所有数据都返回原始格式
-        )
-        await asyncio.sleep(30)
-        await client.stop_mixed_stream()
-
-asyncio.run(main())
-```
-
-### 4. 使用命令行工具 (`sdk_cli_monitor.py`)
-
-我们提供了一个强大的命令行工具，用于快速测试所有数据流。
-
-**启动EEG数据流，持续20秒:**
-```bash
-python examples/sdk_cli_monitor.py --mode eeg --duration 20
-```
-
-**启动EEG原始数据流:**
-```bash
-python examples/sdk_cli_monitor.py --mode eeg --raw_data --duration 10
-```
-
-**启动混合数据流（主数据为阻抗），持续30秒:**
-```bash
-python examples/sdk_cli_monitor.py --mode mixed --mixed_primary impedance --duration 30
-```
-
-**启动混合数据流并输出原始数据:**
-```bash
-python examples/sdk_cli_monitor.py --mode mixed --mixed_primary eeg --raw_data --duration 20
-```
-
-**启动IMU数据流，并指定设备地址:**
-```bash
-python examples/sdk_cli_monitor.py --mode imu --address "XX:XX:XX:XX:XX:XX" --raw_data
-```
-
-**查看所有可用参数:**
-```bash
-python examples/sdk_cli_monitor.py --help
-```
-
-### 5. 算法的使用
-```python
-from ble_sdk.algo.eeg import get_eeg_signal
-
-# input_list: 去掉header 和 tail 长度 192 的 eeg 数据
-# channel_num: 1 2 3 4   通道数
-
-nddata, psddd, ffttt = get_eeg_signal(input_list, channel_num=1)    
-print(nddata.shape, psddd.shape, ffttt.shape) 
-```
-
-## 项目结构
-
-```
-ble_sdk/
-├── docs/                 # 文档
-├── examples/             # 示例脚本
-│   ├── ble_scan.py       # BLE设备扫描示例
-│   ├── mixed_data_monitor.py  # 混合数据流监控示例
-│   ├── sdk_cli_monitor.py     # 命令行监控工具
-│   └── sdk_metrics_example.py # 性能指标示例
-├── src/                  # 源码
-│   └── ble_sdk/
-│       ├── __init__.py   # SDK包初始化，导出公共API
-│       ├── algo/         # 数据处理算法
-│       │   ├── __init__.py
-│       │   ├── eeg.py    # EEG数据处理算法[psd、fft]
-│       │   └── impedance.py  # 阻抗转换算法
-│       ├── client.py     # 核心 BleClient 类
-│       ├── constants.py  # 常量定义 (UUID, 命令, 设备配置)
-│       ├── exceptions.py # 自定义异常
-│       ├── log.py        # SDK日志系统
-│       ├── scanner.py    # BLE设备扫描功能
-│       ├── utils/        # 工具模块
-│       │   ├── __init__.py
-│       │   └── cache.py  # 缓存装饰器和配置构建器
-│       └── handles/      # 各数据流的回调处理器和解析器
-│           ├── __init__.py
-│           ├── battery_rssi_handler.py  # 电池和RSSI处理
-│           ├── eeg_handler.py           # EEG数据处理
-│           ├── impedance_handler.py     # 阻抗数据处理
-│           ├── imu_handler.py           # IMU数据处理
-│           └── lead_handler.py          # 导联状态处理
-├── tests/                # 测试套件
-├── .gitignore
-├── LICENSE
-├── pyproject.toml        # 项目配置文件 (PEP 621)
-├── README.md
-└── uv.lock               # 依赖锁定文件
-```
-
-## API 参考
-
-### BleClient 类
-
-`BleClient` 是 SDK 的核心类，提供了与 BLE 设备交互的所有功能。
-
-#### 主要方法
-
-- `start_eeg_stream(user_callback, raw_data_only=False)` - 启动EEG数据流
-- `start_imu_stream(user_callback, raw_data_only=False)` - 启动IMU数据流  
-- `start_impedance_stream(user_callback, raw_data_only=False)` - 启动阻抗数据流
-- `start_lead_stream(user_callback, raw_data_only=False)` - 启动导联状态流
-- `start_battery_stream(user_callback)` - 启动电池数据流
-- `start_mixed_stream(mode, user_callback, raw_main_data_only=False)` - 启动混合数据流
-
-#### 原始数据模式
-
-所有数据流方法都支持 `raw_data_only` 参数：
-- `raw_data_only=False`（默认）：回调函数接收解析后的字典数据
-- `raw_data_only=True`：回调函数接收去除帧头帧尾的原始 `bytearray` 数据
-
-混合数据流使用 `raw_main_data_only` 参数控制所有数据类型的输出格式。
-
-### 异常类
-
-所有异常继承自基础的 `BleError` 类：
-
-- `ConnectionError` - 连接失败时抛出。
-- `DisconnectionError` - 断开连接失败时抛出。
-- `NotificationError` - 启用或停止通知失败时抛出。
-- `DeviceNotFoundError` - 未找到指定地址的设备时抛出。
-- `WriteError` - 写入特性失败时抛出。
-
-## 最佳实践
-
-1. **使用异步上下文管理器**：始终使用 `async with` 来确保正确的资源释放。这可以保证在操作完成或发生错误时，`BleClient` 实例能够正确地断开连接并清理资源。
-
-2. **实现高效的回调函数**：确保回调函数是异步的，并能高效地处理数据，避免阻塞主事件循环。对于原始数据模式，注意数据类型判断。
-
-3. **适当处理异常**：通过使用 `try-except` 块，可以优雅地处理连接失败、通知错误或设备未找到等情况，从而提高应用程序的健壮性。
-
-4. **使用日志记录**：集成一个成熟的日志系统（如 Python `loguru`），记录关键操作（连接尝试、通知启用/停止、数据接收、错误）的详细信息，这对于调试和监控至关重要。
-
-5. **选择合适的数据模式**：
-   - 使用解析模式（默认）进行常规数据分析
-   - 使用原始数据模式进行自定义数据处理或性能优化
-   - 混合模式适用于需要多种数据类型同步采集的场景
-
-6. **日志内容和函数docstring用英文**：保持代码注释和文档的语言一致性，有助于国际化合作和提高可读性。
-
-## 开发者指南
-
-### 环境设置
-
-```bash
-# 创建并激活虚拟环境
-python -m venv .venv
-# On Windows: .venv\Scripts\activate
-# On macOS/Linux: source .venv/bin/activate
-
-# 安装开发依赖
-pip install -e ".[dev]"
-```
-
-### 运行测试
-
-```bash
-pytest
-```
-
-## 许可证
-
-[MIT](LICENSE)
