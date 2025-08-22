@@ -30,7 +30,8 @@ async def test_scanner():
         
         logger.info(f"Found {len(devices)} device(s):")
         for i, device in enumerate(devices):
-            logger.info(f"  {i+1}. {device['name']} ({device['address']}) - RSSI: {device['rssi']}")
+            rssi_str = f"RSSI: {device['rssi']}" if device['rssi'] is not None else "RSSI: N/A"
+            logger.info(f"  {i+1}. {device['name']} ({device['address']}) - {rssi_str}")
         
         return True
         
