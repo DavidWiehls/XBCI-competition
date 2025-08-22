@@ -29,7 +29,7 @@ from ble_sdk.log import sdk_logger_manager
 sdk_logger_manager.set_level("INFO")
 
 class BCIMotorImageryClassifier:
-    def __init__(self, device_address: str = None, sample_rate: int = 250):
+    def __init__(self, device_address: str = "D6:5A:01:75:CD:7E", sample_rate: int = 250):
         """
         Initialize BCI Motor Imagery Classifier
         
