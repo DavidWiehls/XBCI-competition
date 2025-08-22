@@ -42,9 +42,6 @@ XBCI-competition/
 ├── test_scanner.py                       # Device connection test
 ├── requirements_bci.txt                  # Python dependencies
 ├── BCI_README.md                         # Detailed documentation
-└── examples/
-    └── competition_files/
-        └── README.md                     # This file
 ```
 
 ## 🧠 Running the BCI System
@@ -64,7 +61,7 @@ BLE Scanner Test
 ==============================
 Testing BLE Scanner...
 Found 1 device(s):
-  1. YourDeviceName (XX:XX:XX:XX:XX:XX) - RSSI: -45
+  1. OurDeviceName (D6:5A:01:75:CD:7E) - CD7E ID39 Nervoviden
 Scanner test completed successfully!
 You can now run the BCI classifier.
 ```
