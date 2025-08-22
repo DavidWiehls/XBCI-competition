@@ -3,9 +3,9 @@ from enum import IntEnum
 from typing import Dict, Optional
 
 # Default connection parameters
-DEFAULT_CONNECTION_TIMEOUT = 10.0   
+DEFAULT_CONNECTION_TIMEOUT = 30.0   
 # Ble scan timeout
-SCAN_TIMEOUT = 15.0
+SCAN_TIMEOUT = 30.0
 # Ble device_name prefix
 DEVICE_PREFIX_TUPLE = ("jxj", "brainup", "music", "xiaomi")
 

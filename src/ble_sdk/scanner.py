@@ -33,7 +33,7 @@ async def scan_ble_devices():
             except Exception as e:
                 logger.debug(f"Could not get RSSI for device {device.name}: {e}")
             
-            logger.debug(f"Found device {device.name} with address {device.address} and RSSI {rssi}")
+            logger.debug(f"Found device: {device}")
             name_lower = device.name.lower()
             if name_lower.startswith(DEVICE_PREFIX_TUPLE):
                 res.append({"name": device.name, "address": str(device.address), "rssi": rssi})

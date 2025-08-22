@@ -64,18 +64,29 @@ class BleClient:
         try:
             logger.info(f"Connecting to device {self.address} ...")
             self.client = BleakClient(self.address, timeout=timeout)
+            # The next line is where the connection attempt happens.
             self.is_connected = await self.client.connect()
-
+            
+            print("self.is_connected")
+            #asyncio.sleep(1)
             if not self.is_connected:
+                # Add more specific logging here to help debug
+                logger.error(f"Bleak client returned 'False' for connection status. This could be due to a timeout, device rejection, or another device already connected.")
                 raise ConnectionError(f"Unable to connect to device {self.address}")
 
             logger.info(f"Successfully connected to device {self.address}")
             return True
 
         except BleakError as e:
+            # The BleakError exception provides detailed information on why the connection failed.
+            # You can log this specific error for better confirmation.
             logger.error(f"Error connecting to device {self.address}: {str(e)}")
-            raise ConnectionError(f"Error connecting to device: {str(e)}")
+            if "org.freedesktop.DBus.Error.UnknownObject" in str(e):
+                logger.error("This is often a low-level Bluetooth service issue. Try restarting your computer or the device.")
+            elif "Connection refused" in str(e):
+                logger.error("The device is likely already connected to another host. Please disconnect it.")
 
+            raise ConnectionError(f"Error connecting to device: {str(e)}")
     async def disconnect(self) -> bool:
         """Disconnect from the BLE device.
 

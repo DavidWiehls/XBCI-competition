@@ -20,10 +20,10 @@ logger.add(
 )
 
 # Import SDK components
-from ble_sdk.client import BleClient
-from ble_sdk.constants import DeviceType
-from ble_sdk.scanner import scan_ble_devices
-from ble_sdk.log import sdk_logger_manager
+from src.ble_sdk.client import BleClient
+from src.ble_sdk.constants import DeviceType
+from src.ble_sdk.scanner import scan_ble_devices
+from src.ble_sdk.log import sdk_logger_manager
 
 # Set SDK log level
 sdk_logger_manager.set_level("INFO")
@@ -302,8 +302,27 @@ class BCIMotorImageryClassifier:
                 self.device_address = await self.find_device()
             
             # Initialize client
-            self.client = BleClient(address=self.device_address, device_type=DeviceType.BLE_8)
-            
+            #self.client = BleClient(address=self.device_address, device_type=DeviceType.BLE_8)
+            device_types_to_test = [DeviceType.BLE_8, DeviceType.BLE_4, DeviceType.BLE_2, DeviceType.BLE_1]
+            connected = False
+
+            for device_type in device_types_to_test:
+                try:
+                    logger.info(f"Attempting to connect with DeviceType.{device_type.name}...")
+                    self.client = BleClient(address=self.device_address, device_type=device_type)
+
+                    async with self.client:
+                        logger.info(f"Successfully connected with DeviceType.{device_type.name}!")
+                        self.device_type = device_type
+                        connected = True
+                        break  # Exit the loop once a successful connection is made
+
+                except ConnectionError:
+                    logger.warning(f"Connection failed with DeviceType.{device_type.name}. Trying next type.")
+                    continue
+
+                if not connected:
+                        raise Exception("Failed to connect with all tested device types.")
             async with self.client:
                 logger.info("Connected to BLE device")
                 
