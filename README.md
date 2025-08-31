@@ -14,8 +14,8 @@ A comprehensive Brain-Computer Interface (BCI) system for motor imagery classifi
 - **Online Classification**: Real-time classification from live EEG stream
 - **Offline Classification**: Batch processing of saved data files
 
-### 🎨 **Professional User Interface**
-- Graphical User Interface (GUI) with XBCI logo
+### 🎨 **Simple User Interface**
+- Graphical User Interface with XBCI logo
 - Command Line Interface (CLI) for automation
 - Point-and-click operation for easy use
 
@@ -160,11 +160,3 @@ This system works with:
 - **Online BCI devices**: Real-time EEG stream processing
 - **Offline data files**: Batch processing of saved recordings
 - **Custom applications**: Direct Python API integration
-
-## License
-
-See LICENSE file for details.
-
----
-
-**Ready to use!** Your XBCI Motor Imagery Classifier is now set up with both online and offline capabilities, professional GUI, and comprehensive documentation. 🚀
